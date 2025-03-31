@@ -87,6 +87,10 @@
         keywords: ["hello", "hi", "hey"],
         response: "Hi there! I’m Gabi. How can I help you?"
       },
+       {
+        keywords: ["lets get up and move", "calm", "dance"],
+        response: "Wahoo, let's dance"
+      },
       {
         keywords: ["help", "assist", "support"],
         response: "Let’s take it one step at a time. What do you need help with?"
@@ -141,6 +145,11 @@
         response: "See you later! I’m always here when you need me."
       }
     ];
+
+   function toggleFAQ() {
+  const box = document.getElementById("faqBox");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
 
     function respondToUser(userText) {
       const match = gabiResponses.find(entry =>
