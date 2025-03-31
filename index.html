@@ -99,21 +99,42 @@
       keywords: ["bye", "goodbye"],
       response: "See you later! I’m always here when you need me."
     }
+    {
+  keywords: ["rain", "raindrops", "storm"],
+  response: "Here's some gentle rain to help you relax. ☔",
+  action: () => playAmbient("rain")
+},
+{
+  keywords: ["ocean", "waves", "sea"],
+  response: "Let’s listen to calming ocean waves. 🌊",
+  action: () => playAmbient("ocean")
+},
+{
+  keywords: ["forest", "trees", "birds"],
+  response: "Birdsong and forest sounds are on now. 🌲",
+  action: () => playAmbient("forest")
+},
+{
+  keywords: ["stop", "silence", "quiet"],
+  response: "Stopping all sounds now. 🛑",
+  action: stopAllAudio
+}
+
   ];
 
  function respondToUser(userText) {
   const match = gabiResponses.find(entry =>
     entry.keywords.some(keyword => userText.includes(keyword))
   );
-  const response = match ? match.response : "I'm listening. Can you tell me more?";
+  const response = match ? match.response : "I'm listening. What can I help you with now?";
   addMessage(response, "gabi");
   speak(response);
 
-  // If response has an action (like playing music), do it!
   if (match && match.action) {
     match.action();
   }
 }
+
 
 
   function addMessage(text, sender) {
