@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gabi the Giraffe</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #4b007d;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    #chatbox {
+      background: #fff;
+      color: #333;
+      width: 100%;
+      max-width: 400px;
+      height: 400px;
+      overflow-y: auto;
+      padding: 1rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      margin-bottom: 1rem;
+    }
+    .message {
+      margin: 0.5rem 0;
+    }
+    .gabi {
+      color: #a64ac9;
+    }
+    .user {
+      text-align: right;
+      color: #007bff;
+    }
+    input, button {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      border: none;
+      margin-bottom: 0.5rem;
+    }
+    button {
+      background: #ffa500;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Gabi the Giraffe</h1>
+  <div id="chatbox"></div>
+  <input type="text" id="userInput" placeholder="Ask Gabi for help..." />
+  <button onclick="startListening()">🎤 Talk to Gabi</button>
+
+  <script>
+    const chatbox = document.getElementById("chatbox");
+    const input = document.getElementById("userInput");
+
+    const gabiResponses = {
+      hello: "Hi there! I’m Gabi the Giraffe. I’m here to help.",
+      help: "Let’s take it one step at a time. Can you tell me what you need?",
+      anxious: "Take a deep breath. You're doing great. Want to hear a calming sound?",
+      eat: "Are you hungry? Would you like help choosing food?",
+      sit: "Let’s find a comfy seat together.",
+      default: "I’m listening. Can you tell me more?"
+    };
+
+    function addMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.className = `message ${sender}`;
+      msg.textContent = text;
+      chatbox.appendChild(msg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    function speak(text) {
+      const utter = new SpeechSynthesisUtterance(text);
+      const voices = speechSynthesis.getVoices();
+      utter.voice = voices.find(voice => voice.lang === 'en-US') || voices[0];
+      speechSynthesis.speak(utter);
+    }
+
+    function respondToUser(userText) {
+      let response = gabiResponses.default;
+      for (const keyword in gabiResponses) {
+        if (userText.includes(keyword)) {
+          response = gabiResponses[keyword];
+          break;
+        }
+      }
+      addMessage(response, "gabi");
+      speak(response);
+    }
+
+    input.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        const userText = input.value.trim().toLowerCase();
+        if (!userText) return;
+        addMessage(userText, "user");
+        input.value = "";
+        respondToUser(userText);
+      }
+    });
+
+    function startListening() {
+      if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+        alert("Sorry, your browser doesn't support voice input. Try Chrome.");
+        return;
+      }
+
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+
+      recognition.start();
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        addMessage(transcript, "user");
+        respondToUser(transcript);
+      };
+
+      recognition.onerror = () => {
+        const errorMsg = "Sorry, I didn’t catch that.";
+        addMessage(errorMsg, "gabi");
+        speak(errorMsg);
+      };
+    }
+  </script>
+</body>
+</html>
