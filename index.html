@@ -133,6 +133,29 @@
  function speak(text) {
   const utter = new SpeechSynthesisUtterance(text);
 
+   function stopAllAudio() {
+  document.querySelectorAll("audio").forEach(audio => {
+    audio.pause();
+    audio.currentTime = 0;
+  });
+}
+
+function playAmbient(type) {
+  stopAllAudio();
+  const soundMap = {
+    rain: document.getElementById("ambientRain"),
+    ocean: document.getElementById("ambientOcean"),
+    forest: document.getElementById("ambientForest")
+  };
+  const audio = soundMap[type];
+  if (audio) {
+    audio.volume = 0.5;
+    audio.loop = true;
+    audio.play();
+  }
+}
+
+
   // Wait for voices to be loaded
   const voices = speechSynthesis.getVoices();
 
@@ -185,8 +208,11 @@
     };
   }
 </script>
+<audio id="gabiMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+<audio id="ambientRain" src="https://cdn.pixabay.com/audio/2023/03/26/audio_b9d9e6f39b.mp3"></audio>
+<audio id="ambientOcean" src="https://cdn.pixabay.com/audio/2022/10/09/audio_9567764c36.mp3"></audio>
+<audio id="ambientForest" src="https://cdn.pixabay.com/audio/2023/03/02/audio_191448f9a7.mp3"></audio>
 
 </body>
-<audio id="gabiMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
 
 </html>
