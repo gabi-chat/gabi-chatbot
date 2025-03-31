@@ -62,14 +62,57 @@
     const chatbox = document.getElementById("chatbox");
     const input = document.getElementById("userInput");
 
-    const gabiResponses = {
-      hello: "Hi there! I’m Gabi the Giraffe. I’m here to help.",
-      help: "Let’s take it one step at a time. Can you tell me what you need?",
-      anxious: "Take a deep breath. You're doing great. Want to hear a calming sound?",
-      eat: "Are you hungry? Would you like help choosing food?",
-      sit: "Let’s find a comfy seat together.",
-      default: "I’m listening. Can you tell me more?"
-    };
+    // Expanded set of responses
+const gabiResponses = [
+  {
+    keywords: ["hello", "hi", "hey"],
+    response: "Hi there! I’m Gabi the Giraffe. I'm here to help you feel calm and confident."
+  },
+  {
+    keywords: ["help", "assist", "support"],
+    response: "Let’s take it one step at a time. What do you need help with?"
+  },
+  {
+    keywords: ["anxious", "nervous", "scared"],
+    response: "Take a deep breath. You're doing amazing. Want to hear a calming sound?"
+  },
+  {
+    keywords: ["eat", "hungry", "food", "snack"],
+    response: "Are you feeling hungry? I can help you order something tasty."
+  },
+  {
+    keywords: ["sit", "chair", "seat"],
+    response: "Let’s find a comfy seat together. I’ll be right here with you."
+  },
+  {
+    keywords: ["paper", "pencil", "write", "homework"],
+    response: "Ready to learn? Let’s grab your pencil and paper."
+  },
+  {
+    keywords: ["tired", "rest", "break"],
+    response: "It’s okay to rest. Let’s pause for a moment together."
+  },
+  {
+    keywords: ["music", "song", "calm sound"],
+    response: "Playing soft music now. Let’s take a moment to relax together."
+  },
+  {
+    keywords: ["bye", "goodbye"],
+    response: "See you later! I’m always here when you need me."
+  }
+];
+
+// New matcher function
+function respondToUser(userText) {
+  let matched = gabiResponses.find(item =>
+    item.keywords.some(keyword => userText.includes(keyword))
+  );
+
+  const response = matched ? matched.response : "I'm listening. Can you tell me more?";
+  addMessage(response, "gabi");
+  speak(response);
+}
+;
 
     function addMessage(text, sender) {
       const msg = document.createElement("div");
