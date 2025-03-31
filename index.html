@@ -59,122 +59,107 @@
   <button onclick="startListening()">🎤 Talk to Gabi</button>
 
   <script>
-    const chatbox = document.getElementById("chatbox");
-    const input = document.getElementById("userInput");
+  const chatbox = document.getElementById("chatbox");
+  const input = document.getElementById("userInput");
 
-    // Expanded set of responses
-const gabiResponses = [
-  {
-    keywords: ["hello", "hi", "hey"],
-    response: "Hi there! I’m Gabi the Giraffe. I'm here to help you feel calm and confident."
-  },
-  {
-    keywords: ["help", "assist", "support"],
-    response: "Let’s take it one step at a time. What do you need help with?"
-  },
-  {
-    keywords: ["anxious", "nervous", "scared"],
-    response: "Take a deep breath. You're doing amazing. Want to hear a calming sound?"
-  },
-  {
-    keywords: ["eat", "hungry", "food", "snack"],
-    response: "Are you feeling hungry? I can help you order something tasty."
-  },
-  {
-    keywords: ["sit", "chair", "seat"],
-    response: "Let’s find a comfy seat together. I’ll be right here with you."
-  },
-  {
-    keywords: ["paper", "pencil", "write", "homework"],
-    response: "Ready to learn? Let’s grab your pencil and paper."
-  },
-  {
-    keywords: ["tired", "rest", "break"],
-    response: "It’s okay to rest. Let’s pause for a moment together."
-  },
-  {
-    keywords: ["music", "song", "calm sound"],
-    response: "Playing soft music now. Let’s take a moment to relax together."
-  },
-  {
-    keywords: ["bye", "goodbye"],
-    response: "See you later! I’m always here when you need me."
+  const gabiResponses = [
+    {
+      keywords: ["hello", "hi", "hey"],
+      response: "Hi there! I’m Gabi the Giraffe. I'm here to help you feel calm and confident."
+    },
+    {
+      keywords: ["help", "assist", "support"],
+      response: "Let’s take it one step at a time. What do you need help with?"
+    },
+    {
+      keywords: ["anxious", "nervous", "scared"],
+      response: "Take a deep breath. You're doing amazing. Want to hear a calming sound?"
+    },
+    {
+      keywords: ["eat", "hungry", "food", "snack"],
+      response: "Are you feeling hungry? I can help you order something tasty."
+    },
+    {
+      keywords: ["sit", "chair", "seat"],
+      response: "Let’s find a comfy seat together. I’ll be right here with you."
+    },
+    {
+      keywords: ["paper", "pencil", "write", "homework"],
+      response: "Ready to learn? Let’s grab your pencil and paper."
+    },
+    {
+      keywords: ["tired", "rest", "break"],
+      response: "It’s okay to rest. Let’s pause for a moment together."
+    },
+    {
+      keywords: ["music", "song", "calm sound"],
+      response: "Playing soft music now. Let’s take a moment to relax together."
+    },
+    {
+      keywords: ["bye", "goodbye"],
+      response: "See you later! I’m always here when you need me."
+    }
+  ];
+
+  function respondToUser(userText) {
+    const match = gabiResponses.find(entry =>
+      entry.keywords.some(keyword => userText.includes(keyword))
+    );
+    const response = match ? match.response : "I'm listening. Can you tell me more?";
+    addMessage(response, "gabi");
+    speak(response);
   }
-];
 
-// New matcher function
-function respondToUser(userText) {
-  let matched = gabiResponses.find(item =>
-    item.keywords.some(keyword => userText.includes(keyword))
-  );
+  function addMessage(text, sender) {
+    const msg = document.createElement("div");
+    msg.className = `message ${sender}`;
+    msg.textContent = text;
+    chatbox.appendChild(msg);
+    chatbox.scrollTop = chatbox.scrollHeight;
+  }
 
-  const response = matched ? matched.response : "I'm listening. Can you tell me more?";
-  addMessage(response, "gabi");
-  speak(response);
-}
-;
+  function speak(text) {
+    const utter = new SpeechSynthesisUtterance(text);
+    const voices = speechSynthesis.getVoices();
+    utter.voice = voices.find(voice => voice.lang === 'en-US') || voices[0];
+    speechSynthesis.speak(utter);
+  }
 
-    function addMessage(text, sender) {
-      const msg = document.createElement("div");
-      msg.className = `message ${sender}`;
-      msg.textContent = text;
-      chatbox.appendChild(msg);
-      chatbox.scrollTop = chatbox.scrollHeight;
+  input.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {
+      const userText = input.value.trim().toLowerCase();
+      if (!userText) return;
+      addMessage(userText, "user");
+      input.value = "";
+      respondToUser(userText);
+    }
+  });
+
+  function startListening() {
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+      alert("Sorry, your browser doesn't support voice input. Try Chrome.");
+      return;
     }
 
-    function speak(text) {
-      const utter = new SpeechSynthesisUtterance(text);
-      const voices = speechSynthesis.getVoices();
-      utter.voice = voices.find(voice => voice.lang === 'en-US') || voices[0];
-      speechSynthesis.speak(utter);
-    }
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
 
-    function respondToUser(userText) {
-      let response = gabiResponses.default;
-      for (const keyword in gabiResponses) {
-        if (userText.includes(keyword)) {
-          response = gabiResponses[keyword];
-          break;
-        }
-      }
-      addMessage(response, "gabi");
-      speak(response);
-    }
+    recognition.start();
 
-    input.addEventListener("keypress", function (e) {
-      if (e.key === "Enter") {
-        const userText = input.value.trim().toLowerCase();
-        if (!userText) return;
-        addMessage(userText, "user");
-        input.value = "";
-        respondToUser(userText);
-      }
-    });
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.toLowerCase();
+      addMessage(transcript, "user");
+      respondToUser(transcript);
+    };
 
-    function startListening() {
-      if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-        alert("Sorry, your browser doesn't support voice input. Try Chrome.");
-        return;
-      }
+    recognition.onerror = () => {
+      const errorMsg = "Sorry, I didn’t catch that.";
+      addMessage(errorMsg, "gabi");
+      speak(errorMsg);
+    };
+  }
+</script>
 
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = "en-US";
-      recognition.interimResults = false;
-
-      recognition.start();
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript.toLowerCase();
-        addMessage(transcript, "user");
-        respondToUser(transcript);
-      };
-
-      recognition.onerror = () => {
-        const errorMsg = "Sorry, I didn’t catch that.";
-        addMessage(errorMsg, "gabi");
-        speak(errorMsg);
-      };
-    }
-  </script>
 </body>
 </html>
