@@ -118,12 +118,25 @@
     chatbox.scrollTop = chatbox.scrollHeight;
   }
 
-  function speak(text) {
-    const utter = new SpeechSynthesisUtterance(text);
-    const voices = speechSynthesis.getVoices();
-    utter.voice = voices.find(voice => voice.lang === 'en-US') || voices[0];
-    speechSynthesis.speak(utter);
-  }
+ function speak(text) {
+  const utter = new SpeechSynthesisUtterance(text);
+
+  // Wait for voices to be loaded
+  const voices = speechSynthesis.getVoices();
+
+  // Choose a soft voice (change as needed)
+  utter.voice = voices.find(voice =>
+    voice.name.toLowerCase().includes("google") || voice.name.toLowerCase().includes("samantha")
+  ) || voices[0];
+
+  // Adjust tone
+  utter.pitch = 1.3; // higher = softer
+  utter.rate = 0.9;  // slower = calmer
+  utter.volume = 1;  // keep at full volume or adjust if needed
+
+  speechSynthesis.speak(utter);
+}
+
 
   input.addEventListener("keypress", function (e) {
     if (e.key === "Enter") {
