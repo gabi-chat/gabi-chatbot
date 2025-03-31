@@ -73,7 +73,7 @@
     },
     {
       keywords: ["anxious", "nervous", "scared"],
-      response: "Take a deep breath. You're doing amazing. Want to hear a calming sound?"
+      response: "Take a deep breath. You're doing amazing."
     },
     {
       keywords: ["eat", "hungry", "food", "snack"],
@@ -101,14 +101,20 @@
     }
   ];
 
-  function respondToUser(userText) {
-    const match = gabiResponses.find(entry =>
-      entry.keywords.some(keyword => userText.includes(keyword))
-    );
-    const response = match ? match.response : "I'm listening. Can you tell me more?";
-    addMessage(response, "gabi");
-    speak(response);
+ function respondToUser(userText) {
+  const match = gabiResponses.find(entry =>
+    entry.keywords.some(keyword => userText.includes(keyword))
+  );
+  const response = match ? match.response : "I'm listening. Can you tell me more?";
+  addMessage(response, "gabi");
+  speak(response);
+
+  // If response has an action (like playing music), do it!
+  if (match && match.action) {
+    match.action();
   }
+}
+
 
   function addMessage(text, sender) {
     const msg = document.createElement("div");
@@ -117,6 +123,12 @@
     chatbox.appendChild(msg);
     chatbox.scrollTop = chatbox.scrollHeight;
   }
+    function playMusic() {
+  const music = document.getElementById("gabiMusic");
+  music.volume = 0.5; // Optional: adjust volume
+  music.play();
+}
+
 
  function speak(text) {
   const utter = new SpeechSynthesisUtterance(text);
@@ -130,8 +142,8 @@
   ) || voices[0];
 
   // Adjust tone
-  utter.pitch = 1.3; // higher = softer
-  utter.rate = 0.9;  // slower = calmer
+  utter.pitch = 1.0; // higher = softer
+  utter.rate = 0.8;  // slower = calmer
   utter.volume = 1;  // keep at full volume or adjust if needed
 
   speechSynthesis.speak(utter);
@@ -175,4 +187,6 @@
 </script>
 
 </body>
+<audio id="gabiMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+
 </html>
