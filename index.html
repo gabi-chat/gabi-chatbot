@@ -75,19 +75,33 @@
   <!-- AUDIO ELEMENTS -->
   <audio id="gabiMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
   <audio id="ambientRain" src="https://www.orangefreesounds.com/wp-content/uploads/2016/06/Rain-ambience.mp3"></audio>
-<audio id="ambientOcean" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_3f2f6b9b0e.mp3"></audio>
-<audio id="ambientForest" src="https://freesound.org/data/previews/528/528661_11613624-lq.mp3" type="audio/mpeg"></audio>
+  <audio id="ambientOcean" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_3f2f6b9b0e.mp3"></audio>
+  <audio id="ambientForest" src="https://freesound.org/data/previews/528/528661_11613624-lq.mp3" type="audio/mpeg"></audio>
 
   <script>
     const chatbox = document.getElementById("chatbox");
     const input = document.getElementById("userInput");
+
+    const memory = {}; // simple memory object
 
     const gabiResponses = [
       {
         keywords: ["hello", "hi", "hey"],
         response: "Hi there! I’m Gabi. How can I help you?"
       },
-       {
+      {
+        keywords: ["my name is"],
+        response: (text) => {
+          const name = text.split("my name is")[1].trim();
+          memory.name = name;
+          return `Nice to meet you, ${name}!`;
+        }
+      },
+      {
+        keywords: ["what's my name", "what is my name"],
+        response: () => memory.name ? `Your name is ${memory.name}.` : "I don't know your name yet!"
+      },
+      {
         keywords: ["get up", "move", "dance"],
         response: "Wahoo, let's dance. Now tell me to play music"
       },
@@ -146,21 +160,24 @@
       }
     ];
 
-   function toggleFAQ() {
-  const box = document.getElementById("faqBox");
-  box.style.display = box.style.display === "none" ? "block" : "none";
-}
+    function toggleFAQ() {
+      const box = document.getElementById("faqBox");
+      box.style.display = box.style.display === "none" ? "block" : "none";
+    }
 
     function respondToUser(userText) {
       const match = gabiResponses.find(entry =>
         entry.keywords.some(keyword => userText.includes(keyword))
       );
-      const response = match ? match.response : "I'm listening. What can I help you with now?";
+      let response;
+      if (match) {
+        response = typeof match.response === "function" ? match.response(userText) : match.response;
+        if (match.action) match.action();
+      } else {
+        response = "I'm listening. What can I help you with now?";
+      }
       addMessage(response, "gabi");
       speak(response);
-      if (match && match.action) {
-        match.action();
-      }
     }
 
     function addMessage(text, sender) {
@@ -219,35 +236,3 @@
         addMessage(userText, "user");
         input.value = "";
         respondToUser(userText);
-      }
-    });
-
-    function startListening() {
-      if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-        alert("Sorry, your browser doesn't support voice input. Try Chrome.");
-        return;
-      }
-
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = "en-US";
-      recognition.interimResults = false;
-
-      recognition.start();
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript.toLowerCase();
-        addMessage(transcript, "user");
-        respondToUser(transcript);
-      };
-
-      recognition.onerror = () => {
-        const errorMsg = "Sorry, I didn’t catch that.";
-        addMessage(errorMsg, "gabi");
-        speak(errorMsg);
-      };
-    }
-  </script>
-
-
-</body>
-</html>
