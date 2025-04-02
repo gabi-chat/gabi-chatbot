@@ -77,7 +77,7 @@
     <h3>Frequently Asked Questions</h3>
     <ul style="list-style-type: none; padding-left: 0;">
       <li><strong>What can I say to Gabi?</strong><br>Try “Hello”, “Play music”, “I feel anxious”, "dance", "get up", "I am hungry", "paper", "pencil", "write", "homework", "My name is...", "What's my name?", "How am I feeling?", "What's the weather today?"</li><br>
-      <li><strong>What can Gabi do?</strong><br>Gabi can talk with you, remember your name and mood, play calming ambient sounds, respond to voice input, and even tell you the current weather.</li><br>
+      <li><strong>What can Gabi do?</strong><br>Gabi can chat, remember your name and mood, play music and sounds, give you the weather, and respond to your voice.</li><br>
       <li><strong>Can Gabi remember things?</strong><br>Yes! Gabi can remember your name, your mood, and more. Try saying “My name is Alex” or “I feel happy”. Then ask “What’s my name?” or “How am I feeling?” later.</li><br>
       <li><strong>Can Gabi tell me the weather?</strong><br>Yes! Ask “What’s the weather like today?” and Gabi will give you the local forecast.</li><br>
       <li><strong>Can Gabi talk back?</strong><br>Yes! She uses voice output to respond gently.</li><br>
@@ -91,7 +91,6 @@
   <input type="text" id="userInput" placeholder="Ask Gabi for help..." />
   <button onclick="startListening()">🎤 Talk to Gabi</button>
 
-  <!-- AUDIO ELEMENTS (using working mp3s from SoundHelix) -->
   <audio id="gabiMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
   <audio id="ambientRain" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio>
   <audio id="ambientOcean" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"></audio>
@@ -108,6 +107,23 @@
 
     const gabiResponses = [
       {
+        keywords: ["hello", "hi", "hey"],
+        response: "Hi there! I’m Gabi. How can I help you?"
+      },
+      {
+        keywords: ["my name is"],
+        response: (text) => {
+          const name = text.split("my name is")[1].trim();
+          memory.name = name;
+          localStorage.setItem("userName", name);
+          return `Nice to meet you, ${name}!`;
+        }
+      },
+      {
+        keywords: ["what's my name", "what is my name"],
+        response: () => memory.name ? `Your name is ${memory.name}.` : "I don't know your name yet!"
+      },
+      {
         keywords: ["weather", "forecast", "temperature"],
         response: async () => {
           try {
@@ -121,6 +137,35 @@
             speak(errorMsg);
           }
         }
+      },
+      {
+        keywords: ["music", "song", "calm sound"],
+        response: "Playing music now. Let’s take a moment to dance together.",
+        action: playMusic
+      },
+      {
+        keywords: ["rain", "raindrops", "storm"],
+        response: "Here's some gentle rain to help you relax.",
+        action: () => playAmbient("rain")
+      },
+      {
+        keywords: ["ocean", "waves", "sea"],
+        response: "Let’s listen to calming ocean waves.",
+        action: () => playAmbient("ocean")
+      },
+      {
+        keywords: ["forest", "trees", "birds"],
+        response: "Birdsong and forest sounds are on now.",
+        action: () => playAmbient("forest")
+      },
+      {
+        keywords: ["stop", "silence", "quiet"],
+        response: "Stopping all sounds now.",
+        action: stopAllAudio
+      },
+      {
+        keywords: ["bye", "goodbye"],
+        response: "See you later! I’m always here when you need me."
       }
     ];
 
@@ -163,6 +208,35 @@
       speechSynthesis.speak(utter);
     }
 
+    function playMusic() {
+      stopAllAudio();
+      const music = document.getElementById("gabiMusic");
+      music.volume = 0.5;
+      music.play();
+    }
+
+    function stopAllAudio() {
+      document.querySelectorAll("audio").forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
+    }
+
+    function playAmbient(type) {
+      stopAllAudio();
+      const soundMap = {
+        rain: document.getElementById("ambientRain"),
+        ocean: document.getElementById("ambientOcean"),
+        forest: document.getElementById("ambientForest")
+      };
+      const audio = soundMap[type];
+      if (audio) {
+        audio.volume = 0.5;
+        audio.loop = true;
+        audio.play();
+      }
+    }
+
     input.addEventListener("keypress", function (e) {
       if (e.key === "Enter") {
         const userText = input.value.trim().toLowerCase();
@@ -172,6 +246,31 @@
         respondToUser(userText);
       }
     });
+
+    function startListening() {
+      if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+        alert("Sorry, your browser doesn't support voice input. Try Chrome.");
+        return;
+      }
+
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+
+      recognition.start();
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        addMessage(transcript, "user");
+        respondToUser(transcript);
+      };
+
+      recognition.onerror = () => {
+        const errorMsg = "Sorry, I didn’t catch that.";
+        addMessage(errorMsg, "gabi");
+        speak(errorMsg);
+      };
+    }
   </script>
 
 </body>
