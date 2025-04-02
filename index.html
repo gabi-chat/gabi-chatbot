@@ -222,7 +222,7 @@
         keywords: ["news", "headlines", "what's happening"],
         response: async () => {
           try {
-            const res = await fetch("https://api.currentsapi.services/v1/latest-news?apiKey=YOUR_API_KEY");
+            const res = await fetch("https://api.currentsapi.services/v1/latest-news?apiKey=18T8dgi2x1Nt8vxPlWX8d6M6yDSnce494zTKQFfO3kUvJ9Ze");
             const data = await res.json();
             const headline = data.news[0].title;
             const msg = `Here's a headline: ${headline}`;
