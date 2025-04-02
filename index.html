@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gabi.chat</title>
+  <title>Gabi - Your Friendly AI Companion</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -16,10 +16,10 @@
     }
     #header {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      width: 100%;
-      max-width: 400px;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
     }
     #faqButton {
       background: #ffa500;
@@ -80,11 +80,10 @@
   </style>
 </head>
 <body>
-  <div id="header" style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-  <button id="faqButton" onclick="toggleFAQ()">Gabi Commands</button>
-  <h1 style="margin: 0;">gabi.chat</h1>
-</div>
-
+  <div id="header">
+    <h1 style="margin: 0;">Gabi - Your Friendly AI Companion</h1>
+    <button id="faqButton" onclick="toggleFAQ()">Gabi Commands</button>
+  </div>
 
   <div id="faqBox" style="display: none; background: #fff; color: #333; padding: 1rem; border-radius: 1rem; max-width: 400px; margin-bottom: 1rem;">
     <h3>Frequently Asked Questions</h3>
@@ -100,7 +99,7 @@
       <tr><td>Play music</td><td>Plays calming music.</td></tr>
       <tr><td>Stop</td><td>Stops all sound.</td></tr>
       <tr><td>What's the weather?</td><td>Gets your local weather.</td></tr>
-<tr><td>What's the news?</td><td>Gets top news headlines.</td></tr>
+      <tr><td>What's the news?</td><td>Gets top news headlines.</td></tr>
     </table>
   </div>
 
