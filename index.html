@@ -64,10 +64,22 @@
       color: white;
       cursor: pointer;
     }
+    table {
+      width: 100%;
+      max-width: 400px;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 0.5rem;
+      text-align: left;
+    }
   </style>
 </head>
 <body>
-
   <div id="header">
     <button id="faqButton" onclick="toggleFAQ()">❓ FAQ</button>
     <h1>Gabi.chat</h1>
@@ -75,16 +87,19 @@
 
   <div id="faqBox" style="display: none; background: #fff; color: #333; padding: 1rem; border-radius: 1rem; max-width: 400px; margin-bottom: 1rem;">
     <h3>Frequently Asked Questions</h3>
-    <ul style="list-style-type: none; padding-left: 0;">
-      <li><strong>What can I say to Gabi?</strong><br>Try “Hello”, “Play music”, “I feel anxious”, "dance", "get up", "I am hungry", "paper", "pencil", "write", "homework", "My name is...", "What's my name?", "How am I feeling?", "What's the weather today?"</li><br>
-      <li><strong>What can Gabi do?</strong><br>Gabi can chat, remember your name and mood, play music and sounds, give you the weather, and respond to your voice.</li><br>
-      <li><strong>Can Gabi remember things?</strong><br>Yes! Gabi can remember your name, your mood, and more. Try saying “My name is Alex” or “I feel happy”. Then ask “What’s my name?” or “How am I feeling?” later.</li><br>
-      <li><strong>Can Gabi tell me the weather?</strong><br>Yes! Ask “What’s the weather like today?” and Gabi will give you the local forecast.</li><br>
-      <li><strong>Can Gabi talk back?</strong><br>Yes! She uses voice output to respond gently.</li><br>
-      <li><strong>How do I stop sounds?</strong><br>Say or type “Stop”, “Quiet”, or “Silence”.</li><br>
-      <li><strong>Can I use my voice?</strong><br>Yes! Click the 🎤 button and speak to Gabi.</li><br>
-      <li><strong>Does Gabi work offline?</strong><br>No, Gabi needs a modern browser like Chrome and an internet connection.</li>
-    </ul>
+    <p>Try saying things like:</p>
+    <button onclick="toggleTable()">Show/Hide Command List</button>
+    <table id="faqTable" style="display: none;">
+      <tr><th>User Says</th><th>Gabi Responds</th></tr>
+      <tr><td>Hello</td><td>Hi there! I’m Gabi.</td></tr>
+      <tr><td>My name is Alex</td><td>Remembers your name.</td></tr>
+      <tr><td>I feel happy</td><td>Remembers your mood.</td></tr>
+      <tr><td>What's my name?</td><td>Tells you your name.</td></tr>
+      <tr><td>How am I feeling?</td><td>Tells you your mood.</td></tr>
+      <tr><td>Play music</td><td>Plays calming music.</td></tr>
+      <tr><td>Stop</td><td>Stops all sound.</td></tr>
+      <tr><td>What's the weather?</td><td>Gets your local weather.</td></tr>
+    </table>
   </div>
 
   <div id="chatbox"></div>
@@ -102,7 +117,8 @@
 
     const memory = {
       name: localStorage.getItem("userName") || null,
-      mood: localStorage.getItem("userMood") || null
+      mood: localStorage.getItem("userMood") || null,
+      location: null
     };
 
     const gabiResponses = [
@@ -111,13 +127,26 @@
         response: "Hi there! I’m Gabi. How can I help you?"
       },
       {
-        keywords: ["my name is"],
+        keywords: ["my name is", "i am called"],
         response: (text) => {
-          const name = text.split("my name is")[1].trim();
+          const name = text.split(/my name is|i am called/i)[1]?.trim();
           memory.name = name;
           localStorage.setItem("userName", name);
           return `Nice to meet you, ${name}!`;
         }
+      },
+      {
+        keywords: ["i feel", "i am feeling"],
+        response: (text) => {
+          const mood = text.split(/i feel|i am feeling/i)[1]?.trim();
+          memory.mood = mood;
+          localStorage.setItem("userMood", mood);
+          return `Thanks for telling me. You're feeling ${mood}.`;
+        }
+      },
+      {
+        keywords: ["how am i feeling", "what's my mood"],
+        response: () => memory.mood ? `You're feeling ${memory.mood}.` : "I don't know your mood yet."
       },
       {
         keywords: ["what's my name", "what is my name"],
@@ -174,6 +203,11 @@
       box.style.display = box.style.display === "none" ? "block" : "none";
     }
 
+    function toggleTable() {
+      const table = document.getElementById("faqTable");
+      table.style.display = table.style.display === "none" ? "table" : "none";
+    }
+
     function respondToUser(userText) {
       const match = gabiResponses.find(entry =>
         entry.keywords.some(keyword => userText.includes(keyword))
@@ -182,7 +216,7 @@
       if (match && typeof match.response === 'function') {
         const result = match.response(userText);
         if (result instanceof Promise) {
-          result.then(); // weather response
+          result.then();
         } else {
           addMessage(result, "gabi");
           speak(result);
@@ -206,9 +240,7 @@
     function speak(text) {
       const utter = new SpeechSynthesisUtterance(text);
       const voices = speechSynthesis.getVoices();
-      utter.voice = voices.find(voice =>
-        voice.name.toLowerCase().includes("google") || voice.name.toLowerCase().includes("samantha")
-      ) || voices[0];
+      utter.voice = voices.find(voice => voice.name.toLowerCase().includes("google") || voice.name.toLowerCase().includes("samantha")) || voices[0];
       utter.pitch = 1.0;
       utter.rate = 0.8;
       utter.volume = 1;
