@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gabi.chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #4b007d;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    #header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 400px;
+    }
+    #faqButton {
+      background: #ffa500;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+    #chatbox {
+      background: #fff;
+      color: #333;
+      width: 100%;
+      max-width: 400px;
+      height: 400px;
+      overflow-y: auto;
+      padding: 1rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      margin-bottom: 1rem;
+    }
+    .message {
+      margin: 0.5rem 0;
+    }
+    .gabi {
+      color: #a64ac9;
+    }
+    .user {
+      text-align: right;
+      color: #007bff;
+    }
+    input, button {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      border: none;
+      margin-bottom: 0.5rem;
+    }
+    button {
+      background: #ffa500;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="header">
+    <button id="faqButton" onclick="toggleFAQ()">❓ FAQ</button>
+    <h1>Gabi.chat</h1>
+  </div>
+
+  <div id="faqBox" style="display: none; background: #fff; color: #333; padding: 1rem; border-radius: 1rem; max-width: 400px; margin-bottom: 1rem;">
+    <h3>Frequently Asked Questions</h3>
+    <ul style="list-style-type: none; padding-left: 0;">
+      <li><strong>What can I say to Gabi?</strong><br>Try “Hello”, “Play music”, “I feel anxious”, "dance", "get up", "I am hungry", "paper", "pencil", "write", "homework", "My name is...", "What's my name?", "How am I feeling?", "What's the weather today?"</li><br>
+      <li><strong>Can Gabi remember things?</strong><br>Yes! Gabi can remember your name, your mood, and more. Try saying “My name is Alex” or “I feel happy”. Then ask “What’s my name?” or “How am I feeling?” later.</li><br>
+      <li><strong>Can Gabi tell me the weather?</strong><br>Yes! Ask “What’s the weather like today?” and Gabi will give you the local forecast.</li><br>
+      <li><strong>Can Gabi talk back?</strong><br>Yes! She uses voice output to respond gently.</li><br>
+      <li><strong>How do I stop sounds?</strong><br>Say or type “Stop”, “Quiet”, or “Silence”.</li><br>
+      <li><strong>Can I use my voice?</strong><br>Yes! Click the 🎤 button and speak to Gabi.</li><br>
+      <li><strong>Does Gabi work offline?</strong><br>No, Gabi needs a modern browser like Chrome and an internet connection.</li>
+    </ul>
+  </div>
+
+  <div id="chatbox"></div>
+  <input type="text" id="userInput" placeholder="Ask Gabi for help..." />
+  <button onclick="startListening()">🎤 Talk to Gabi</button>
+
+  <!-- AUDIO ELEMENTS (using working mp3s from SoundHelix) -->
+  <audio id="gabiMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+  <audio id="ambientRain" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio>
+  <audio id="ambientOcean" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"></audio>
+  <audio id="ambientForest" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"></audio>
+
+  <script>
+    const chatbox = document.getElementById("chatbox");
+    const input = document.getElementById("userInput");
+
+    const memory = {
+      name: localStorage.getItem("userName") || null,
+      mood: localStorage.getItem("userMood") || null
+    };
+
+    const gabiResponses = [
+      {
+        keywords: ["weather", "forecast", "temperature"],
+        response: async () => {
+          try {
+            const res = await fetch("https://wttr.in/?format=3");
+            const weather = await res.text();
+            addMessage(weather, "gabi");
+            speak(weather);
+          } catch (error) {
+            const errorMsg = "Sorry, I couldn't fetch the weather right now.";
+            addMessage(errorMsg, "gabi");
+            speak(errorMsg);
+          }
+        }
+      }
+    ];
+
+    function toggleFAQ() {
+      const box = document.getElementById("faqBox");
+      box.style.display = box.style.display === "none" ? "block" : "none";
+    }
+
+    function respondToUser(userText) {
+      const match = gabiResponses.find(entry =>
+        entry.keywords.some(keyword => userText.includes(keyword))
+      );
+
+      if (match && typeof match.response === 'function') {
+        match.response(userText);
+      } else {
+        const response = match ? match.response : "I'm listening. What can I help you with now?";
+        addMessage(response, "gabi");
+        speak(response);
+      }
+    }
+
+    function addMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.className = `message ${sender}`;
+      msg.textContent = text;
+      chatbox.appendChild(msg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    function speak(text) {
+      const utter = new SpeechSynthesisUtterance(text);
+      const voices = speechSynthesis.getVoices();
+      utter.voice = voices.find(voice =>
+        voice.name.toLowerCase().includes("google") || voice.name.toLowerCase().includes("samantha")
+      ) || voices[0];
+      utter.pitch = 1.0;
+      utter.rate = 0.8;
+      utter.volume = 1;
+      speechSynthesis.speak(utter);
+    }
+
+    input.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        const userText = input.value.trim().toLowerCase();
+        if (!userText) return;
+        addMessage(userText, "user");
+        input.value = "";
+        respondToUser(userText);
+      }
+    });
+  </script>
+
+</body>
+</html>
