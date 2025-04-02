@@ -180,11 +180,18 @@
       );
 
       if (match && typeof match.response === 'function') {
-        match.response(userText);
+        const result = match.response(userText);
+        if (result instanceof Promise) {
+          result.then(); // weather response
+        } else {
+          addMessage(result, "gabi");
+          speak(result);
+        }
       } else {
         const response = match ? match.response : "I'm listening. What can I help you with now?";
         addMessage(response, "gabi");
         speak(response);
+        if (match && match.action) match.action();
       }
     }
 
@@ -248,12 +255,9 @@
     });
 
     function startListening() {
-      if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-        alert("Sorry, your browser doesn't support voice input. Try Chrome.");
-        return;
-      }
-
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return alert("Sorry, your browser doesn't support voice input. Try Chrome.");
+      const recognition = new SpeechRecognition();
       recognition.lang = "en-US";
       recognition.interimResults = false;
 
