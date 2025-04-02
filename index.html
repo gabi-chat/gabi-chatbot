@@ -82,7 +82,7 @@
 <body>
   <div id="header">
     <h1 style="margin: 0;">Gabi - Your Friendly AI Companion</h1>
-    <button id="faqButton" onclick="toggleFAQ()">Gabi Commands</button>
+    <button id="faqButton">Gabi Commands</button>
   </div>
 
   <div id="faqBox" style="display: none; background: #fff; color: #333; padding: 1rem; border-radius: 1rem; max-width: 400px; margin-bottom: 1rem;">
@@ -102,6 +102,19 @@
       <tr><td>What's the news?</td><td>Gets top news headlines.</td></tr>
     </table>
   </div>
+
+  <script>
+    document.getElementById("faqButton").addEventListener("click", function() {
+      const box = document.getElementById("faqBox");
+      box.style.display = box.style.display === "none" ? "block" : "none";
+    });
+
+    function toggleTable() {
+      const table = document.getElementById("faqTable");
+      table.style.display = table.style.display === "none" ? "table" : "none";
+    }
+  </script>
+
 
   <div id="chatbox"></div>
   <input type="text" id="userInput" placeholder="Ask Gabi for help..." />
