@@ -196,6 +196,24 @@
         keywords: ["bye", "goodbye"],
         response: "See you later! I’m always here when you need me."
       }
+// gabiResponses news array:
+{
+  keywords: ["news", "headlines", "what's happening"],
+  response: async () => {
+    try {
+      const res = await fetch("https://api.currentsapi.services/v1/latest-news?apiKey=YOUR_API_KEY");
+      const data = await res.json();
+      const headline = data.news[0].title;
+      const message = `Here's a headline: ${headline}`;
+      addMessage(message, "gabi");
+      speak(message);
+    } catch (error) {
+      const errorMsg = "Sorry, I couldn't fetch the news right now.";
+      addMessage(errorMsg, "gabi");
+      speak(errorMsg);
+    }
+  }
+}
     ];
 
     function toggleFAQ() {
