@@ -103,19 +103,6 @@
     </table>
   </div>
 
-  <script>
-    document.getElementById("faqButton").addEventListener("click", function() {
-      const box = document.getElementById("faqBox");
-      box.style.display = box.style.display === "none" ? "block" : "none";
-    });
-
-    function toggleTable() {
-      const table = document.getElementById("faqTable");
-      table.style.display = table.style.display === "none" ? "table" : "none";
-    }
-  </script>
-
-
   <div id="chatbox"></div>
   <input type="text" id="userInput" placeholder="Ask Gabi for help..." />
   <button onclick="startListening()">🎤 Talk to Gabi</button>
@@ -126,6 +113,16 @@
   <audio id="ambientForest" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"></audio>
 
   <script>
+    document.getElementById("faqButton").addEventListener("click", function() {
+      const box = document.getElementById("faqBox");
+      box.style.display = box.style.display === "none" ? "block" : "none";
+    });
+
+    function toggleTable() {
+      const table = document.getElementById("faqTable");
+      table.style.display = table.style.display === "none" ? "table" : "none";
+    }
+
     const chatbox = document.getElementById("chatbox");
     const input = document.getElementById("userInput");
 
@@ -209,36 +206,25 @@
       {
         keywords: ["bye", "goodbye"],
         response: "See you later! I’m always here when you need me."
+      },
+      {
+        keywords: ["news", "headlines", "what's happening"],
+        response: async () => {
+          try {
+            const res = await fetch("https://api.currentsapi.services/v1/latest-news?apiKey=YOUR_API_KEY");
+            const data = await res.json();
+            const headline = data.news[0].title;
+            const message = `Here's a headline: ${headline}`;
+            addMessage(message, "gabi");
+            speak(message);
+          } catch (error) {
+            const errorMsg = "Sorry, I couldn't fetch the news right now.";
+            addMessage(errorMsg, "gabi");
+            speak(errorMsg);
+          }
+        }
       }
-// gabiResponses news array:
-{
-  keywords: ["news", "headlines", "what's happening"],
-  response: async () => {
-    try {
-      const res = await fetch("https://api.currentsapi.services/v1/latest-news?apiKey=YOUR_API_KEY");
-      const data = await res.json();
-      const headline = data.news[0].title;
-      const message = `Here's a headline: ${headline}`;
-      addMessage(message, "gabi");
-      speak(message);
-    } catch (error) {
-      const errorMsg = "Sorry, I couldn't fetch the news right now.";
-      addMessage(errorMsg, "gabi");
-      speak(errorMsg);
-    }
-  }
-}
     ];
-
-    function toggleFAQ() {
-      const box = document.getElementById("faqBox");
-      box.style.display = box.style.display === "none" ? "block" : "none";
-    }
-
-    function toggleTable() {
-      const table = document.getElementById("faqTable");
-      table.style.display = table.style.display === "none" ? "table" : "none";
-    }
 
     function respondToUser(userText) {
       const match = gabiResponses.find(entry =>
@@ -340,6 +326,5 @@
       };
     }
   </script>
-
 </body>
 </html>
