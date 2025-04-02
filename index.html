@@ -85,20 +85,46 @@
     <button id="faqButton">Gabi Commands</button>
   </div>
 
-  
+  <!-- FAQ Box -->
+  <div id="faqBox" style="display: none; background: #fff; color: #333; padding: 1rem; border-radius: 1rem; max-width: 400px; margin-bottom: 1rem;">
+    <h3>Frequently Asked Questions</h3>
+    <p>Try saying things like:</p>
+    <button onclick="toggleTable()">Show/Hide Command List</button>
+    <table id="faqTable" style="display: none;">
+      <thead>
+        <tr>
+          <th>User Says</th>
+          <th>Gabi Responds</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Hello</td><td>Hi there! I’m Gabi.</td></tr>
+        <tr><td>My name is Alex</td><td>Remembers your name.</td></tr>
+        <tr><td>I feel happy</td><td>Remembers your mood.</td></tr>
+        <tr><td>What's my name?</td><td>Tells you your name.</td></tr>
+        <tr><td>How am I feeling?</td><td>Tells you your mood.</td></tr>
+        <tr><td>Play music</td><td>Plays calming music.</td></tr>
+        <tr><td>Stop</td><td>Stops all sound.</td></tr>
+        <tr><td>What's the weather?</td><td>Gets your local weather.</td></tr>
+        <tr><td>What's the news?</td><td>Gets top news headlines.</td></tr>
+      </tbody>
+    </table>
   </div>
 
   <div id="chatbox"></div>
   <input type="text" id="userInput" placeholder="Ask Gabi for help..." />
   <button onclick="startListening()">🎤 Talk to Gabi</button>
 
+  <!-- Audio Elements -->
   <audio id="gabiMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
   <audio id="ambientRain" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio>
   <audio id="ambientOcean" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"></audio>
   <audio id="ambientForest" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"></audio>
 
+  <!-- JavaScript -->
   <script>
-    document.getElementById("faqButton").addEventListener("click", function() {
+    // Toggle FAQ visibility
+    document.getElementById("faqButton").addEventListener("click", () => {
       const box = document.getElementById("faqBox");
       box.style.display = box.style.display === "none" ? "block" : "none";
     });
@@ -156,10 +182,10 @@
             const weather = await res.text();
             addMessage(weather, "gabi");
             speak(weather);
-          } catch (error) {
-            const errorMsg = "Sorry, I couldn't fetch the weather right now.";
-            addMessage(errorMsg, "gabi");
-            speak(errorMsg);
+          } catch {
+            const msg = "Sorry, I couldn't fetch the weather right now.";
+            addMessage(msg, "gabi");
+            speak(msg);
           }
         }
       },
@@ -199,13 +225,13 @@
             const res = await fetch("https://api.currentsapi.services/v1/latest-news?apiKey=YOUR_API_KEY");
             const data = await res.json();
             const headline = data.news[0].title;
-            const message = `Here's a headline: ${headline}`;
-            addMessage(message, "gabi");
-            speak(message);
-          } catch (error) {
-            const errorMsg = "Sorry, I couldn't fetch the news right now.";
-            addMessage(errorMsg, "gabi");
-            speak(errorMsg);
+            const msg = `Here's a headline: ${headline}`;
+            addMessage(msg, "gabi");
+            speak(msg);
+          } catch {
+            const msg = "Sorry, I couldn't fetch the news right now.";
+            addMessage(msg, "gabi");
+            speak(msg);
           }
         }
       }
@@ -243,7 +269,9 @@
     function speak(text) {
       const utter = new SpeechSynthesisUtterance(text);
       const voices = speechSynthesis.getVoices();
-      utter.voice = voices.find(voice => voice.name.toLowerCase().includes("google") || voice.name.toLowerCase().includes("samantha")) || voices[0];
+      if (voices.length > 0) {
+        utter.voice = voices.find(voice => voice.name.toLowerCase().includes("google") || voice.name.toLowerCase().includes("samantha")) || voices[0];
+      }
       utter.pitch = 1.0;
       utter.rate = 0.8;
       utter.volume = 1;
